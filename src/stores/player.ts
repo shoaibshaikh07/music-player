@@ -1,0 +1,48 @@
+import type { Music } from "@/types/global";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+
+interface PlayerState {
+  music: Music | null;
+  currentMusicIndex: number;
+  isPlaying: boolean;
+  isMuted: boolean;
+  progress: number;
+  duration: number;
+  volume: number;
+
+  setMusic: (music: Music | null) => void;
+  setCurrentMusicIndex: (currentMusicIndex: number) => void;
+  setIsPlaying: (isPlaying: boolean) => void;
+  setIsMuted: (isMuted: boolean) => void;
+  setProgress: (progress: number) => void;
+  setDuration: (duration: number) => void;
+  setVolume: (volume: number) => void;
+}
+
+export const usePlayerStore = create<PlayerState>()(
+  persist(
+    (set) => ({
+      music: null,
+      currentMusicIndex: 0,
+      isPlaying: false,
+      isMuted: false,
+      progress: 0,
+      duration: 0,
+      volume: 80,
+
+      setMusic: (music: Music | null): void => set({ music }),
+      setCurrentMusicIndex: (currentMusicIndex: number): void =>
+        set({ currentMusicIndex }),
+      setIsPlaying: (isPlaying: boolean): void => set({ isPlaying }),
+      setIsMuted: (isMuted: boolean): void => set({ isMuted }),
+      setProgress: (progress: number): void => set({ progress }),
+      setDuration: (duration): void => set({ duration }),
+      setVolume: (volume): void => set({ volume }),
+    }),
+    {
+      name: "player",
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);

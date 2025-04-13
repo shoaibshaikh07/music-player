@@ -17,6 +17,10 @@ const HeroLottie = (): React.JSX.Element => {
   const { systemTheme } = useTheme();
   const ref = React.useRef<ILottie>(null);
 
+  if (!ref.current) {
+    return <PlaceholderLottie />;
+  }
+
   return (
     <Lottie
       ref={ref}

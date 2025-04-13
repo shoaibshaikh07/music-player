@@ -16,6 +16,7 @@ import {
   Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePlayerStore } from "@/stores/player";
 
 interface MusicCardProps {
   music: Music;
@@ -26,10 +27,12 @@ export const MusicCard = ({
   music,
   onClose,
 }: MusicCardProps): React.JSX.Element => {
+  const { progress, setProgress, volume, setVolume } = usePlayerStore();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [volume, setVolume] = useState(80);
+  // const [progress, setProgress] = useState(0);
+  // const [volume, setVolume] = useState(80);
   const [liked, setLiked] = useState(false);
   const [duration, setDuration] = useState(0); // Add this state
   const [isLoading, setIsLoading] = useState(true);
@@ -38,8 +41,11 @@ export const MusicCard = ({
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
   const currentTrack = musics.filter((track) => track.id === music.id)[0];
-  console.log(currentTrack);
   const audioUrl = `https://x1u0.a1.e2-8.dev/hackathon/${currentTrack.id}.mp3`;
+
+  useEffect(() => {
+    console.log("Progress", progress);
+  }, [progress, setProgress]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -52,6 +58,7 @@ export const MusicCard = ({
         if (Number.isNaN(audioDuration)) {
           return; // Don't update if duration is not valid
         }
+        audioRef.current.volume = Math.min(1, Math.max(0, volume / 100));
         setDuration(audioDuration);
         setIsLoading(false);
       }
@@ -82,7 +89,7 @@ export const MusicCard = ({
         clearInterval(progressInterval.current);
       }
     };
-  }, [audioUrl, currentTrackIndex, isPlaying]);
+  }, [audioUrl, currentTrackIndex, isPlaying, setProgress, volume]);
 
   // Add separate effect for volume changes
   useEffect(() => {

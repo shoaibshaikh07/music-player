@@ -3,11 +3,9 @@
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import React from "react";
-import type { ILottie } from "@lottielab/lottie-player/react";
 
 const Lottie = dynamic(() => import("@lottielab/lottie-player/react"), {
-  ssr: true,
+  ssr: false,
   loading: (): React.JSX.Element => {
     return <PlaceholderLottie />;
   },
@@ -15,22 +13,12 @@ const Lottie = dynamic(() => import("@lottielab/lottie-player/react"), {
 
 const HeroLottie = (): React.JSX.Element => {
   const { systemTheme } = useTheme();
-  const ref = React.useRef<ILottie>(null);
-
-  if (!ref.current) {
-    return <PlaceholderLottie />;
-  }
 
   return (
     <Lottie
-      ref={ref}
       frame={100}
+      autoplay
       loop
-      onLoad={(): void => {
-        if (ref.current) {
-          ref.current.play();
-        }
-      }}
       preserveAspectRatio="xMidYMid meet"
       src={
         systemTheme === "dark"

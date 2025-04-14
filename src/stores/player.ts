@@ -18,6 +18,7 @@ interface PlayerState {
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
   setVolume: (volume: number) => void;
+  reset: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -39,6 +40,15 @@ export const usePlayerStore = create<PlayerState>()(
       setProgress: (progress: number): void => set({ progress }),
       setDuration: (duration): void => set({ duration }),
       setVolume: (volume): void => set({ volume }),
+      reset: (): void => {
+        set({
+          music: null,
+          currentMusicIndex: 0,
+          isPlaying: false,
+          progress: 0,
+          duration: 0,
+        });
+      },
     }),
     {
       name: "player",

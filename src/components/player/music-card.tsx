@@ -15,8 +15,9 @@ import {
   Volume2,
   Heart,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getAudioUrl } from "@/lib/utils";
 import { usePlayerStore } from "@/stores/player";
+import { useLikedMusicStore } from "@/stores/liked-music";
 
 interface MusicCardProps {
   music: Music;
@@ -27,102 +28,100 @@ export const MusicCard = ({
   music,
   onClose,
 }: MusicCardProps): React.JSX.Element => {
-  const { progress, setProgress, volume, setVolume } = usePlayerStore();
+  const {
+    music: previouslyPlayedMusic,
+    setMusic,
+    progress,
+    setProgress,
+    volume,
+    setVolume,
+  } = usePlayerStore();
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  // const [progress, setProgress] = useState(0);
-  // const [volume, setVolume] = useState(80);
-  const [liked, setLiked] = useState(false);
-  const [duration, setDuration] = useState(0); // Add this state
+  const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { likedMusic, toggleLikedMusic } = useLikedMusicStore();
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const currentTrack = musics.filter((track) => track.id === music.id)[0];
-  const audioUrl = `https://x1u0.a1.e2-8.dev/hackathon/${currentTrack.id}.mp3`;
+  const currentTrack = musics.find((track) => track.id === music.id);
 
-  useEffect(() => {
-    console.log("Progress", progress);
-  }, [progress, setProgress]);
+  const isLiked = likedMusic.some(
+    (track) => track.id === music.id && track.liked,
+  );
+
+  const audioUrl = getAudioUrl(currentTrack?.id || null);
 
   useEffect(() => {
     setIsLoading(true);
-    setDuration(0); // Reset duration when loading new track
+    setDuration(0);
     audioRef.current = new Audio(audioUrl);
+
+    const handleTimeUpdate = (): void => {
+      if (audioRef.current) {
+        setProgress(Math.floor(audioRef.current.currentTime));
+      }
+    };
 
     const handleMetadata = (): void => {
       if (audioRef.current) {
         const audioDuration = Math.floor(audioRef.current.duration);
-        if (Number.isNaN(audioDuration)) {
-          return; // Don't update if duration is not valid
+        if (!Number.isNaN(audioDuration)) {
+          setDuration(audioDuration);
+          setIsLoading(false);
         }
-        audioRef.current.volume = Math.min(1, Math.max(0, volume / 100));
-        setDuration(audioDuration);
-        setIsLoading(false);
       }
     };
 
-    // Add metadata loaded event listener
     audioRef.current.addEventListener("loadedmetadata", handleMetadata);
     audioRef.current.addEventListener("durationchange", handleMetadata);
-
-    // If it was playing before, start playing the new track
-    if (isPlaying) {
-      audioRef.current.play();
-      progressInterval.current = setInterval((): void => {
-        if (audioRef.current) {
-          setProgress(Math.floor(audioRef.current.currentTime));
-        }
-      }, 1000);
-    }
+    audioRef.current.addEventListener("timeupdate", handleTimeUpdate);
 
     return (): void => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.removeEventListener("loadedmetadata", handleMetadata);
         audioRef.current.removeEventListener("durationchange", handleMetadata);
+        audioRef.current.removeEventListener("timeupdate", handleTimeUpdate);
         audioRef.current = null;
       }
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
     };
-  }, [audioUrl, currentTrackIndex, isPlaying, setProgress, volume]);
+  }, [audioUrl, setProgress]);
 
-  // Add separate effect for volume changes
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
+      audioRef.current.volume = Math.min(1, Math.max(0, volume / 100));
     }
   }, [volume]);
-  // Update the formatTime function to handle decimals
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (music.id === previouslyPlayedMusic?.id) {
+        audioRef.current.currentTime = progress;
+      } else {
+        setProgress(0);
+        setMusic(music);
+      }
+    }
+  }, [music, previouslyPlayedMusic?.id, progress, setMusic, setProgress]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60); // Add Math.floor here
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Update the togglePlay function to maintain position
   const togglePlay = async (): Promise<void> => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
       audioRef.current.pause();
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
+      setProgress(audioRef.current.currentTime);
     } else {
       try {
-        audioRef.current.currentTime = progress; // Set the current time before playing
+        audioRef.current.currentTime = progress;
         await audioRef.current.play();
-        progressInterval.current = setInterval((): void => {
-          if (audioRef.current) {
-            setProgress(Math.floor(audioRef.current.currentTime));
-          }
-        }, 1000);
       } catch (error) {
         console.error("Error playing audio:", error);
       }
@@ -139,23 +138,26 @@ export const MusicCard = ({
 
   const handleVolumeChange = (value: number[]): void => {
     if (!audioRef.current) return;
-    const newVolume = value[0];
+    const newVolume = Math.max(0, Math.min(100, value[0]));
     audioRef.current.volume = newVolume / 100;
     setVolume(newVolume);
   };
 
   const playNextTrack = (): void => {
-    const nextIndex = (currentTrackIndex + 1) % musics.length;
-    setCurrentTrackIndex(nextIndex);
+    const currentIndex = musics.findIndex((track) => track.id === music.id);
+    const nextTrack = musics[(currentIndex + 1) % musics.length];
+    setMusic(nextTrack);
     setProgress(0);
-    setIsPlaying(false);
+    setIsPlaying(true);
   };
 
   const playPreviousTrack = (): void => {
-    const prevIndex = (currentTrackIndex - 1 + musics.length) % musics.length;
-    setCurrentTrackIndex(prevIndex);
+    const currentIndex = musics.findIndex((track) => track.id === music.id);
+    const prevTrack =
+      musics[(currentIndex - 1 + musics.length) % musics.length];
+    setMusic(prevTrack);
     setProgress(0);
-    setIsPlaying(false);
+    setIsPlaying(true);
   };
 
   return (
@@ -237,10 +239,10 @@ export const MusicCard = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={(): void => setLiked(!liked)}
+                  onClick={(): void => toggleLikedMusic(music.id)}
                 >
                   <Heart
-                    className={`h-6 w-6 ${liked ? "fill-current text-red-500" : ""}`}
+                    className={`h-6 w-6 ${isLiked ? "fill-current text-red-500" : ""}`}
                   />
                 </Button>
                 <div className="flex items-center gap-2">

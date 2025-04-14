@@ -3,6 +3,7 @@ import "./globals.css";
 import { inconsolata, inter, montserrat } from "@/lib/font";
 import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: {
@@ -34,6 +35,7 @@ export default function RootLayout({
             <Navbar />
           </header>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

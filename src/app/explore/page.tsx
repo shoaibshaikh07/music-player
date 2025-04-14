@@ -11,6 +11,7 @@ import { useState } from "react";
 
 const Explore = (): React.JSX.Element => {
   const [selectedMusic, setSelectedMusic] = useState<Music | null>(null);
+  const [musicHover, setMusicHover] = useState<string | null>(null);
 
   return (
     <section className="mx-auto flex max-w-6xl flex-col gap-4 px-1">
@@ -22,33 +23,46 @@ const Explore = (): React.JSX.Element => {
             layoutId={`card-${music.id}`}
             key={music.id}
             onClick={(): void => setSelectedMusic(music)}
-            className="flex cursor-pointer items-center gap-4 rounded bg-card p-4 transition-colors hover:bg-accent"
+            onMouseEnter={(): void => setMusicHover(music.id)}
+            onMouseLeave={(): void => setMusicHover(null)}
+            className="relative flex cursor-pointer items-center gap-4 rounded p-4 transition-colors "
           >
-            <motion.div layoutId={`image-${music.id}`}>
+            {/* Pill */}
+            {musicHover === music.id && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ ease: "easeInOut" }}
+                layoutId="pill"
+                className="absolute inset-0 rounded bg-accent"
+              />
+            )}
+            <motion.div layoutId={`image-${music.id}`} className="relative">
               <Image
                 src={music.cover}
                 alt={music.title}
                 width={48}
                 height={48}
-                className="rounded-md"
+                className="rounded"
               />
             </motion.div>
-            <div className="flex flex-col">
+            <div className="relative flex flex-col">
               <motion.h2
                 layoutId={`title-${music.id}`}
-                className="font-bold text-lg"
+                className="font-bold text-base md:text-lg"
               >
                 {music.title}
               </motion.h2>
               <motion.p
                 layoutId={`artist-${music.id}`}
-                className="text-muted-foreground text-sm"
+                className="text-muted-foreground text-xs md:text-sm"
               >
                 {music.artist.join(", ")}
               </motion.p>
             </div>
-            <div className="flex grow justify-end">
-              <Button variant="secondary" className="text-xs" size="sm">
+            <div className="relative flex grow justify-end">
+              <Button className="text-xs" variant="secondary">
                 Play
               </Button>
             </div>

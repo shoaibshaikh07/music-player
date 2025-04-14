@@ -19,7 +19,7 @@ const Explore = (): React.JSX.Element => {
   const { view, setView } = useBasicStore();
 
   return (
-    <section className="mx-auto flex max-w-6xl flex-col gap-4 px-1">
+    <section className="mx-auto flex min-h-svh max-w-6xl flex-col gap-1 px-1 pb-6">
       <Separator />
       <div className="flex items-center justify-between">
         <h1 className="px-4 font-medium text-lg">Explore</h1>
@@ -57,8 +57,8 @@ const Explore = (): React.JSX.Element => {
             onMouseEnter={(): void => setMusicHover(music.id)}
             onMouseLeave={(): void => setMusicHover(null)}
             className={cn(
-              "relative flex cursor-pointer gap-4 rounded p-4 transition-colors",
-              view === "grid" ? "flex-col" : "flex-row items-center",
+              "relative flex cursor-pointer gap-4 rounded transition-colors",
+              view === "grid" ? "flex-col p-2" : "flex-row items-center p-4",
             )}
           >
             {/* Pill */}

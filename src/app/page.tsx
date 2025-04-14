@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function Home(): React.JSX.Element {
   return (
     <section className="bg-aurora-gradient p-4">
-      <main className="mx-auto flex max-w-xl flex-col gap-4 md:max-w-6xl">
+      <main className="mx-auto flex min-h-svh max-w-xl flex-col gap-4 md:max-w-6xl">
         <div className="grid grid-cols-1 gap-5 md:mt-16 md:grid-cols-2 md:px-8">
           <div className="mx-auto transition duration-300 md:size-[300px] lg:size-[400px]">
             <HeroLottie />

@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { Music } from "@/types/global";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useRef, useState, useEffect } from "react";
 import { Slider } from "../ui/slider";
-import { musics } from "@/data/music";
 import {
   Play,
   Pause,
@@ -14,10 +12,10 @@ import {
   SkipForward,
   Volume2,
   Heart,
+  VolumeOff,
 } from "lucide-react";
-import { cn, getAudioUrl } from "@/lib/utils";
-import { usePlayerStore } from "@/stores/player";
-import { useLikedMusicStore } from "@/stores/liked-music";
+import { cn } from "@/lib/utils";
+import { usePlayer } from "@/hooks/player";
 
 interface MusicCardProps {
   music: Music;
@@ -29,136 +27,23 @@ export const MusicCard = ({
   onClose,
 }: MusicCardProps): React.JSX.Element => {
   const {
-    music: previouslyPlayedMusic,
-    setMusic,
     progress,
-    setProgress,
+    isLoading,
+    isBuffering,
+    toggleLikedMusic,
+    isLiked,
+    handleProgressChange,
+    formatTime,
+    togglePlay,
+    handleVolumeChange,
     volume,
-    setVolume,
-  } = usePlayerStore();
-
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const { likedMusic, toggleLikedMusic } = useLikedMusicStore();
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const currentTrack = musics.find((track) => track.id === music.id);
-
-  const isLiked = likedMusic.some(
-    (track) => track.id === music.id && track.liked,
-  );
-
-  const audioUrl = getAudioUrl(currentTrack?.id || null);
-
-  useEffect(() => {
-    setIsLoading(true);
-    setDuration(0);
-    audioRef.current = new Audio(audioUrl);
-
-    const handleTimeUpdate = (): void => {
-      if (audioRef.current) {
-        setProgress(Math.floor(audioRef.current.currentTime));
-      }
-    };
-
-    const handleMetadata = (): void => {
-      if (audioRef.current) {
-        const audioDuration = Math.floor(audioRef.current.duration);
-        if (!Number.isNaN(audioDuration)) {
-          setDuration(audioDuration);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    audioRef.current.addEventListener("loadedmetadata", handleMetadata);
-    audioRef.current.addEventListener("durationchange", handleMetadata);
-    audioRef.current.addEventListener("timeupdate", handleTimeUpdate);
-
-    return (): void => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeEventListener("loadedmetadata", handleMetadata);
-        audioRef.current.removeEventListener("durationchange", handleMetadata);
-        audioRef.current.removeEventListener("timeupdate", handleTimeUpdate);
-        audioRef.current = null;
-      }
-    };
-  }, [audioUrl, setProgress]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = Math.min(1, Math.max(0, volume / 100));
-    }
-  }, [volume]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      if (music.id === previouslyPlayedMusic?.id) {
-        audioRef.current.currentTime = progress;
-      } else {
-        setProgress(0);
-        setMusic(music);
-      }
-    }
-  }, [music, previouslyPlayedMusic?.id, progress, setMusic, setProgress]);
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const togglePlay = async (): Promise<void> => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-      setProgress(audioRef.current.currentTime);
-    } else {
-      try {
-        audioRef.current.currentTime = progress;
-        await audioRef.current.play();
-      } catch (error) {
-        console.error("Error playing audio:", error);
-      }
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleProgressChange = (value: number[]): void => {
-    if (!audioRef.current) return;
-    const newProgress = value[0];
-    audioRef.current.currentTime = newProgress;
-    setProgress(newProgress);
-  };
-
-  const handleVolumeChange = (value: number[]): void => {
-    if (!audioRef.current) return;
-    const newVolume = Math.max(0, Math.min(100, value[0]));
-    audioRef.current.volume = newVolume / 100;
-    setVolume(newVolume);
-  };
-
-  const playNextTrack = (): void => {
-    const currentIndex = musics.findIndex((track) => track.id === music.id);
-    const nextTrack = musics[(currentIndex + 1) % musics.length];
-    setMusic(nextTrack);
-    setProgress(0);
-    setIsPlaying(true);
-  };
-
-  const playPreviousTrack = (): void => {
-    const currentIndex = musics.findIndex((track) => track.id === music.id);
-    const prevTrack =
-      musics[(currentIndex - 1 + musics.length) % musics.length];
-    setMusic(prevTrack);
-    setProgress(0);
-    setIsPlaying(true);
-  };
+    muted,
+    toggleMute,
+    playNextTrack,
+    playPreviousTrack,
+    duration,
+    isPlaying,
+  } = usePlayer(music);
 
   return (
     <motion.div
@@ -257,10 +142,15 @@ export const MusicCard = ({
                     variant="ghost"
                     size="icon"
                     onClick={togglePlay}
-                    disabled={isLoading}
-                    className={cn(isLoading && "animate-pulse bg-muted")}
+                    disabled={isBuffering || isLoading}
+                    className={cn(
+                      (isLoading || isBuffering) && "animate-pulse bg-muted",
+                      "relative",
+                    )}
                   >
-                    {isPlaying ? (
+                    {isBuffering || isLoading ? (
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    ) : isPlaying ? (
                       <Pause className="h-6 w-6" />
                     ) : (
                       <Play className="h-6 w-6" />
@@ -272,9 +162,20 @@ export const MusicCard = ({
                 </div>
               </div>
               <div className="flex w-32 items-center gap-2">
-                <Volume2 className="h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  className={cn("px-4", muted && "bg-muted")}
+                  size="icon"
+                  onClick={toggleMute}
+                >
+                  {muted ? (
+                    <VolumeOff className="size-4" />
+                  ) : (
+                    <Volume2 className="size-4" />
+                  )}
+                </Button>
                 <Slider
-                  value={[volume]}
+                  value={[muted ? 0 : volume]}
                   max={100}
                   step={1}
                   onValueChange={handleVolumeChange}

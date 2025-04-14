@@ -6,7 +6,7 @@ interface PlayerState {
   music: Music | null;
   currentMusicIndex: number;
   isPlaying: boolean;
-  isMuted: boolean;
+  muted: boolean;
   progress: number;
   duration: number;
   volume: number;
@@ -14,7 +14,7 @@ interface PlayerState {
   setMusic: (music: Music | null) => void;
   setCurrentMusicIndex: (currentMusicIndex: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
-  setIsMuted: (isMuted: boolean) => void;
+  setMuted: (isMuted: boolean) => void;
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
   setVolume: (volume: number) => void;
@@ -27,7 +27,7 @@ export const usePlayerStore = create<PlayerState>()(
       music: null,
       currentMusicIndex: 0,
       isPlaying: false,
-      isMuted: false,
+      muted: false,
       progress: 0,
       duration: 0,
       volume: 80,
@@ -36,7 +36,7 @@ export const usePlayerStore = create<PlayerState>()(
       setCurrentMusicIndex: (currentMusicIndex: number): void =>
         set({ currentMusicIndex }),
       setIsPlaying: (isPlaying: boolean): void => set({ isPlaying }),
-      setIsMuted: (isMuted: boolean): void => set({ isMuted }),
+      setMuted: (muted: boolean): void => set({ muted }),
       setProgress: (progress: number): void => set({ progress }),
       setDuration: (duration): void => set({ duration }),
       setVolume: (volume): void => set({ volume }),

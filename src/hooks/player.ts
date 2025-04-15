@@ -1,207 +1,265 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePlayerStore } from "@/stores/player";
+import type { Music } from "@/types/global";
+import { getAudioUrl } from "@/lib/utils";
 import { musics } from "@/data/music";
 
-import { getAudioUrl } from "@/lib/utils";
-import { usePlayerStore } from "@/stores/player";
-import { useLikedMusicStore } from "@/stores/liked-music";
-import type { Music } from "@/types/global";
+type ReturnType = {
+  progress: number;
+  duration: number;
+  isLoading: boolean;
+  isBuffering: boolean;
+  isPlaying: boolean;
+  volume: number;
+  muted: boolean;
+  colors: string[];
+  isLiked: boolean;
 
-export const usePlayer = (music: Music) => {
-  const {
-    music: previouslyPlayedMusic,
-    setMusic,
-    progress,
-    setProgress,
-    volume,
-    setVolume,
-    muted,
-    setMuted,
-  } = usePlayerStore();
+  formatTime: (seconds: number) => string;
+  togglePlay: () => void;
+  handleProgressChange: (value: number[]) => void;
+  handleVolumeChange: (value: number[]) => void;
+  toggleMute: () => void;
+  playMusic: (music: Music | null) => void;
+  toggleLikedMusic: (music: Music) => void;
+  playNextTrack: () => void;
+  playPreviousTrack: () => void;
+};
 
-  const [isPlaying, setIsPlaying] = useState(false);
+export function usePlayer(initialMusic?: Music): ReturnType {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isBuffering, setIsBuffering] = useState(false);
+  const [colors] = useState<string[]>(["#3b82f6", "#8b5cf6", "#ec4899"]);
 
-  const { likedMusic, toggleLikedMusic } = useLikedMusicStore();
+  const {
+    currentMusic,
+    isPlaying,
+    volume,
+    muted,
+    likedMusic,
+    setCurrentMusic,
+    togglePlay,
+    setIsPlaying,
+    setVolume,
+    setMuted,
+    playNext,
+    toggleLiked,
+  } = usePlayerStore();
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const music = currentMusic || initialMusic;
 
-  const currentTrack = musics.find((track) => track.id === music.id);
-
-  const isLiked = likedMusic.some(
-    (track) => track.id === music.id && track.liked,
-  );
-
-  const audioUrl = getAudioUrl(currentTrack?.id || null);
-
+  // Initialize audio element
   useEffect(() => {
-    setIsLoading(true);
-    setDuration(0);
+    if (typeof window === "undefined") return;
 
-    const audio = new Audio();
-    audio.preload = "auto"; // Preload the audio data
-    audio.src = audioUrl;
-    audioRef.current = audio;
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
+
+    return (): void => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Handle music change
+  useEffect(() => {
+    if (!audioRef.current || !music) return;
+
+    if (isPlaying) {
+      setIsLoading(false); // Set loading to false when playing
+      setTimeout(async () => {
+        if (!audioRef.current) return;
+        await audioRef.current
+          .play()
+          .catch((err) => console.error("Video play error:", err));
+      }, 150);
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying, music]);
+
+  // Handle volume change
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.volume = Math.min(1, Math.max(0, volume / 100));
+  }, [volume]);
+
+  // Handle mute change
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = muted; // Set muted per state
+    setMuted(muted); // Update muted state
+  }, [muted, setMuted]);
+
+  // Set up audio event listeners
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    const audio = audioRef.current;
+
+    audioRef.current.src = getAudioUrl(music?.id || null);
 
     const handleTimeUpdate = (): void => {
-      if (audioRef.current) {
-        setProgress(Math.floor(audioRef.current.currentTime));
+      setProgress(audio.currentTime);
+    };
+
+    const handleDurationChange = (): void => {
+      setDuration(audio.duration);
+    };
+
+    const handleLoadedData = (): void => {
+      setIsLoading(false);
+      setIsBuffering(false);
+      setDuration(audio.duration);
+
+      // Reset loading state to false if audio is playing
+      if (audioRef.current && !audio.paused) {
+        setIsLoading(false);
       }
     };
 
-    const handleMetadata = (): void => {
-      if (audioRef.current) {
-        const audioDuration = Math.floor(audioRef.current.duration);
-        if (!Number.isNaN(audioDuration)) {
-          setDuration(audioDuration);
-          setIsLoading(false);
-        }
+    const handleEnded = (): void => {
+      // Try to play next track
+      const hasNextTrack = playNext();
+
+      // If no next track, pause
+      if (!hasNextTrack) {
+        setIsPlaying(false);
+        setProgress(0);
+        audio.currentTime = 0;
       }
     };
 
     const handleWaiting = (): void => {
       setIsBuffering(true);
+      setIsLoading(false);
     };
 
     const handlePlaying = (): void => {
       setIsBuffering(false);
-    };
-
-    const handleError = (e: ErrorEvent): void => {
-      console.error("Audio error:", e);
       setIsLoading(false);
-      setIsBuffering(false);
     };
 
-    audio.addEventListener("loadedmetadata", handleMetadata);
-    audio.addEventListener("durationchange", handleMetadata);
+    // Add event listeners
     audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("durationchange", handleDurationChange);
+    audio.addEventListener("loadeddata", handleLoadedData);
+    audio.addEventListener("ended", handleEnded);
     audio.addEventListener("waiting", handleWaiting);
     audio.addEventListener("playing", handlePlaying);
-    audio.addEventListener("error", handleError);
 
-    // Pre-buffer some data
-    audio.load();
-
+    // Clean up event listeners
     return (): void => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeEventListener("loadedmetadata", handleMetadata);
-        audioRef.current.removeEventListener("durationchange", handleMetadata);
-        audioRef.current.removeEventListener("timeupdate", handleTimeUpdate);
-        audioRef.current.removeEventListener("waiting", handleWaiting);
-        audioRef.current.removeEventListener("playing", handlePlaying);
-        audioRef.current.removeEventListener("error", handleError);
-        audioRef.current = null;
-      }
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("durationchange", handleDurationChange);
+      audio.removeEventListener("loadeddata", handleLoadedData);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("waiting", handleWaiting);
+      audio.removeEventListener("playing", handlePlaying);
     };
-  }, [audioUrl, setProgress]);
+  }, [playNext, setIsPlaying, music]);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = Math.min(1, Math.max(0, volume / 100));
-    }
-  }, [volume]);
+  // Format time (seconds) to MM:SS
+  const formatTime = (time: number): string => {
+    if (Number.isNaN(time) || time === Number.POSITIVE_INFINITY) return "0:00";
 
-  useEffect(() => {
-    if (audioRef.current) {
-      if (music.id === previouslyPlayedMusic?.id) {
-        audioRef.current.currentTime = progress;
-      } else {
-        setProgress(0);
-        setMusic(music);
-      }
-    }
-  }, [music, previouslyPlayedMusic?.id, progress, setMusic, setProgress]);
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const togglePlay = async (): Promise<void> => {
-    if (!audioRef.current) return;
+  // Handle progress change (seek)
+  const handleProgressChange = (value: number[]): void => {
+    if (!audioRef.current || isLoading) return;
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setProgress(audioRef.current.currentTime);
-    } else {
-      try {
-        audioRef.current.currentTime = progress;
-        // Add a small delay before playing to ensure buffer is ready
-        setTimeout(async () => {
-          try {
-            await audioRef.current?.play();
-          } catch (error) {
-            console.error("Error playing audio:", error);
-          }
-        }, 100);
-      } catch (error) {
-        console.error("Error setting current time:", error);
+    const newTime = value[0];
+    audioRef.current.currentTime = newTime;
+    setProgress(newTime);
+  };
+
+  // Handle volume change
+  const handleVolumeChange = useCallback(
+    (value: number[]) => {
+      const newVolume = Math.min(100, Math.max(0, value[0])); // Limit to 0-100
+      setVolume(newVolume); // Update volume state
+
+      if (audioRef.current) {
+        audioRef.current.volume = newVolume / 100; // Adjust for HTMLMediaElement
       }
-    }
-    setIsPlaying(!isPlaying);
+    },
+    [setVolume],
+  );
+
+  // Play a specific music
+  const playMusic = (music: Music | null): void => {
+    setCurrentMusic(music);
+  };
+
+  // Toggle like for current music
+  const toggleLikedMusic = (music: Music): void => {
+    if (!music) return;
+    toggleLiked(music.id);
   };
 
   const toggleMute = (): void => {
-    setMuted(!muted);
-    if (audioRef.current) {
-      audioRef.current.muted = !muted;
-    }
+    const prevMuted = muted;
+    setMuted(!prevMuted); // Toggle muted state
   };
 
-  const handleProgressChange = (value: number[]): void => {
-    if (!audioRef.current) return;
-    const newProgress = value[0];
-    audioRef.current.currentTime = newProgress;
-    setProgress(newProgress);
-  };
-
-  const handleVolumeChange = (value: number[]): void => {
-    if (!audioRef.current) return;
-    const newVolume = Math.max(0, Math.min(100, value[0]));
-    audioRef.current.volume = newVolume / 100;
-    setVolume(newVolume);
-  };
-
+  // Play next track
   const playNextTrack = (): void => {
-    const currentIndex = musics.findIndex((track) => track.id === music.id);
-    const nextTrack = musics[(currentIndex + 1) % musics.length];
-    setMusic(nextTrack);
-    setProgress(0);
-    setIsPlaying(true);
+    const currentMusicIndex = musics.findIndex(
+      (track) => track.id === currentMusic?.id,
+    );
+    const nextMusicIndex =
+      currentMusicIndex + 1 === musics.length ? 0 : currentMusicIndex + 1;
+
+    const nextMusic = musics[nextMusicIndex];
+    playMusic(nextMusic);
   };
 
+  // Play previous track
   const playPreviousTrack = (): void => {
-    const currentIndex = musics.findIndex((track) => track.id === music.id);
-    const prevTrack =
-      musics[(currentIndex - 1 + musics.length) % musics.length];
-    setMusic(prevTrack);
-    setProgress(0);
-    setIsPlaying(true);
+    const currentMusicIndex = musics.findIndex(
+      (track) => track.id === currentMusic?.id,
+    );
+
+    const nextMusicIndex =
+      currentMusicIndex - 1 === -1 ? musics.length - 1 : currentMusicIndex - 1;
+
+    const nextMusic = musics[nextMusicIndex];
+    playMusic(nextMusic);
   };
 
   return {
     progress,
     duration,
-    handleProgressChange,
     isLoading,
-    toggleLikedMusic,
-    isLiked,
-    audioRef,
-    playPreviousTrack,
-    playNextTrack,
-    togglePlay,
-    handleVolumeChange,
-    volume,
-    muted,
-    toggleMute,
-    formatTime,
     isBuffering,
     isPlaying,
+    volume,
+    muted,
+    colors,
+    isLiked: music ? likedMusic.includes(music.id) : false,
+
+    // Methods
+    formatTime,
+    togglePlay,
+    handleProgressChange,
+    handleVolumeChange,
+    toggleMute,
+    playMusic,
+    toggleLikedMusic,
+    playNextTrack,
+    playPreviousTrack,
   };
-};
+}

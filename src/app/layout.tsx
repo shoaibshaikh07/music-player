@@ -4,6 +4,8 @@ import { inconsolata, inter, montserrat } from "@/lib/font";
 import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
+import { ViewTransitions } from "next-view-transitions";
+import BottomNavigation from "@/components/bottom-navigation";
 
 export const metadata: Metadata = {
   title: {
@@ -21,23 +23,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.JSX.Element {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${inconsolata.variable} ${montserrat.variable} font-sans antialiased`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+    <ViewTransitions>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${inter.variable} ${inconsolata.variable} ${montserrat.variable} font-sans antialiased`}
         >
-          <header>
-            <Navbar />
-          </header>
-          {children}
-          <Toaster />
-        </ThemeProvider>
-      </body>
-    </html>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <header>
+              <Navbar />
+            </header>
+            {children}
+            <Toaster />
+            <BottomNavigation />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

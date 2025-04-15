@@ -3,6 +3,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --animate-fade-in-scale: fade-in-scale 0.3s ease-out;
+  @keyframes fade-in-scale {
+    0% {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  --animate-fade-in: fade-in 0.5s ease-out;
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  --animate-appear: appear 0.5s ease-out;
+  @keyframes appear {
+    0% {
+      pathLength: 0;
+    }
+    100% {
+      pathLength: 1;
+    }
+  }
+  
+  --breakpoint-xs: 415px;
+}
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -27,6 +63,7 @@
   --color-border: hsl(var(--border));
   --color-destructive: hsl(var(--destructive));
   --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-container: hsl(var(--container));
   --color-accent: hsl(var(--accent));
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-muted: hsl(var(--muted));
@@ -45,9 +82,10 @@
 }
 
 :root  {
-  --background: 15 12% 98%;
+  --background: 23 40% 96%;
   --foreground: 15 5% 10%;
   --card: 15 12% 98%;
+  --container: 210 40% 98%;
   --card-foreground: 15 5% 15%;
   --popover: 15 12% 98%;
   --popover-foreground: 15 95% 10%;
@@ -70,6 +108,7 @@
 .dark  {
   --background: 15 12% 10%;
   --foreground: 15 5% 98%;
+  --container: 222.2 47.4% 11.2%;
   --card: 15 12% 10%;
   --card-foreground: 15 5% 98%;
   --popover: 15 12% 5%;

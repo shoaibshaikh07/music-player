@@ -48,7 +48,7 @@ const PlaceholderLottie = (): React.JSX.Element => {
       alt="hero-lottie"
       width={450}
       height={300}
-      className="mx-auto animate-pulse md:size-[250px] lg:size-[400px]"
+      className="mx-auto size-[400px] animate-pulse md:size-[300px] lg:size-[400px]"
     />
   );
 };

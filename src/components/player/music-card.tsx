@@ -1,8 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import type { Music } from "@/types/global";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Image from "next/image";
 import { Slider } from "../ui/slider";
 import {
@@ -13,37 +12,61 @@ import {
   Volume2,
   Heart,
   VolumeOff,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlayer } from "@/hooks/player";
+import CardAurora from "../animated/card-aurora";
+import { useEffect, useState } from "react";
+import { usePlayerStore } from "@/stores/player";
+import { useLikedMusicStore } from "@/stores/liked-music";
 
 interface MusicCardProps {
-  music: Music;
+  //   music: Music;
   onClose: () => void;
 }
 
 export const MusicCard = ({
-  music,
+  //   music,
   onClose,
-}: MusicCardProps): React.JSX.Element => {
+}: MusicCardProps): React.JSX.Element | null => {
+  //   const [lastWarningTime, setLastWarningTime] = useState(0);
+  //   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  const { currentMusic } = usePlayerStore();
+  const { toggleLikedMusic, likedMusics } = useLikedMusicStore();
+  const [mounted, setMounted] = useState(false);
+
+  const isLiked = likedMusics.some((track) => track.id === currentMusic?.id);
+
   const {
     progress,
+    duration,
     isLoading,
     isBuffering,
-    toggleLikedMusic,
-    isLiked,
-    handleProgressChange,
+    isPlaying,
     formatTime,
     togglePlay,
+    handleProgressChange,
     handleVolumeChange,
     volume,
     muted,
     toggleMute,
     playNextTrack,
     playPreviousTrack,
-    duration,
-    isPlaying,
-  } = usePlayer(music);
+  } = usePlayer();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  // Don't render player if no music is selected
+  if (!currentMusic) return null;
+
+  const colors = ["#3b82f6", "#8b5cf6", "#ec4899"];
 
   return (
     <motion.div
@@ -51,40 +74,39 @@ export const MusicCard = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm backdrop-brightness-75"
+      className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm backdrop-brightness-75 will-change-transform"
     >
-      <motion.div
-        layoutId={`card-${music.id}`}
-        className="mx-4 w-full max-w-lg rounded-sm border border-border/60 bg-card p-6 shadow dark:bg-card/80"
-        onClick={(e): void => e.stopPropagation()}
-      >
+      <CardAurora colors={colors} className="pointer-events-auto">
         <div className="flex flex-col gap-4">
+          <motion.div onTap={onClose} className="-top-9 absolute right-4">
+            <X className="size-6" />
+          </motion.div>
           <motion.div
-            layoutId={`image-${music.id}`}
+            layoutId={`image-${currentMusic.id}`}
             className="relative aspect-square w-full"
           >
             <Image
-              src={music.cover}
-              alt={music.title}
+              src={currentMusic.cover}
+              alt={currentMusic.title}
               fill
               className="rounded-[20px] object-cover"
             />
           </motion.div>
           <div className="flex flex-col gap-1">
             <motion.h2
-              layoutId={`title-${music.id}`}
+              layoutId={`title-${currentMusic.id}`}
               className="font-bold text-2xl"
             >
-              {music.title}
+              {currentMusic.title}
             </motion.h2>
             <motion.p
-              layoutId={`artist-${music.id}`}
+              layoutId={`artist-${currentMusic.id}`}
               className="text-muted-foreground text-sm"
             >
-              {music.artist.join(", ")}
+              {currentMusic.artist.join(", ")}
             </motion.p>
           </div>
-          <motion.div layoutId={`playing-${music.id}`}>
+          <motion.div layoutId={`playing-${currentMusic.id}`}>
             <div className="space-y-2">
               <Slider
                 value={[progress]}
@@ -124,7 +146,7 @@ export const MusicCard = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={(): void => toggleLikedMusic(music.id)}
+                  onClick={(): void => toggleLikedMusic(currentMusic)}
                 >
                   <Heart
                     className={`h-6 w-6 ${isLiked ? "fill-current text-red-500" : ""}`}
@@ -143,6 +165,11 @@ export const MusicCard = ({
                     size="icon"
                     onClick={togglePlay}
                     disabled={isBuffering || isLoading}
+                    onKeyDownCapture={(e): void => {
+                      if (e.key === "Space") {
+                        togglePlay();
+                      }
+                    }}
                     className={cn(
                       (isLoading || isBuffering) && "animate-pulse bg-muted",
                       "relative",
@@ -185,7 +212,7 @@ export const MusicCard = ({
             </div>
           </motion.div>
         </div>
-      </motion.div>
+      </CardAurora>
     </motion.div>
   );
 };

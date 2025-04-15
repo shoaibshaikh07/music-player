@@ -20,6 +20,7 @@ import CardAurora from "../animated/card-aurora";
 import { useEffect, useState } from "react";
 import { usePlayerStore } from "@/stores/player";
 import { useLikedMusicStore } from "@/stores/liked-music";
+import { toast } from "sonner";
 
 interface MusicCardProps {
   //   music: Music;
@@ -36,6 +37,9 @@ export const MusicCard = ({
   const { currentMusic } = usePlayerStore();
   const { toggleLikedMusic, likedMusics } = useLikedMusicStore();
   const [mounted, setMounted] = useState(false);
+  const [lastWarningTime, setLastWarningTime] = useState(0);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const isLiked = likedMusics.some((track) => track.id === currentMusic?.id);
 
@@ -205,7 +209,27 @@ export const MusicCard = ({
                   value={[muted ? 0 : volume]}
                   max={100}
                   step={1}
-                  onValueChange={handleVolumeChange}
+                  onValueChange={(value): void => {
+                    if (isIOS) {
+                      const currentTime = Date.now();
+                      if (currentTime - lastWarningTime >= 5000) {
+                        // 5000ms = 5 seconds
+                        setLastWarningTime(currentTime);
+                        toast.info("Please use device volume controls.", {
+                          description:
+                            "Due to ios limitations, you have to use the device volume controls to change the volume.",
+                          action: {
+                            label: "Got it",
+                            onClick: (): void => {
+                              setLastWarningTime(0);
+                            },
+                          },
+                        });
+                      }
+                      return;
+                    }
+                    handleVolumeChange(value);
+                  }}
                   className="cursor-pointer"
                 />
               </div>

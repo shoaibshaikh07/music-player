@@ -5,6 +5,7 @@ import { usePlayerStore } from "@/stores/player";
 import type { Music } from "@/types/global";
 import { getAudioUrl } from "@/lib/utils";
 import { extractColors } from "extract-colors";
+import { Constant } from "@/lib/constant";
 
 type ReturnType = {
   progress: number;
@@ -90,7 +91,7 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
 
       const image = new Image();
 
-      image.src = `http://localhost:3000/_next/image?url=${encodeURIComponent(
+      image.src = `${Constant.SITE_URL}/_next/image?url=${encodeURIComponent(
         music.cover,
       )}&w=1200&q=75`;
 

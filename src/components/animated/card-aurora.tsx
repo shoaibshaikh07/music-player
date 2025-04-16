@@ -21,7 +21,10 @@ const CardAurora = ({
   const COLORS = colors.slice(0, 3);
   const color = useMotionValue(COLORS[0]);
 
-  const backgroundImage = useMotionTemplate`radial-gradient(78.44% 10.98% at 35.59% 4.81%, ${color} 0%, hsl(var(--background)) 100%)`;
+  // const backgroundImage = useMotionTemplate`radial-gradient(78.44% 10.98% at 35.59% 4.81%, ${color} 0%, hsl(var(--background)) 100%)`;
+  const backgroundImage = useMotionTemplate`
+  radial-gradient(100% 60% at var(--mouse-x, 10%) var(--mouse-y, 10%), ${color} 0%, hsl(var(--background)) 100%)
+  `;
 
   useEffect(() => {
     animate(color, COLORS, {

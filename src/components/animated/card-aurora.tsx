@@ -7,7 +7,7 @@ import {
   useMotionTemplate,
   useMotionValue,
 } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 const CardAurora = ({
   children,
@@ -18,7 +18,7 @@ const CardAurora = ({
   className?: string;
   colors: string[];
 }): React.JSX.Element => {
-  const COLORS = colors.slice(0, 3);
+  const COLORS = useMemo(() => colors.slice(0, 4), [colors]);
   const color = useMotionValue(COLORS[0]);
 
   // const backgroundImage = useMotionTemplate`radial-gradient(78.44% 10.98% at 35.59% 4.81%, ${color} 0%, hsl(var(--background)) 100%)`;
@@ -33,7 +33,7 @@ const CardAurora = ({
       repeat: Number.POSITIVE_INFINITY,
       repeatType: "mirror",
     });
-  }, [color, COLORS]);
+  }, [COLORS, color]);
 
   return (
     <motion.section

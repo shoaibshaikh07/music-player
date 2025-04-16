@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePlayerStore } from "@/stores/player";
 import type { Music } from "@/types/global";
 import { getAudioUrl } from "@/lib/utils";
-import { extractColors } from "extract-colors";
 import { Constant } from "@/lib/constant";
+import { Vibrant } from "node-vibrant/browser";
 
 type ReturnType = {
   progress: number;
@@ -95,10 +95,20 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
         music.cover,
       )}&w=1200&q=75`;
 
-      extractColors(image).then((colorData) => {
-        const hexcolors = colorData.map((color) => color.hex);
-        setColors(hexcolors);
-      });
+      Vibrant.from(image.src)
+        .getPalette()
+        .then((palette) => {
+          const colors = [
+            palette.DarkVibrant,
+            palette.DarkMuted,
+            palette.LightMuted,
+          ]
+            .filter(Boolean)
+            .sort((a, b) => (b?.population || 0) - (a?.population || 0))
+            .map((c) => `rgb(${c?.rgb.map((v) => Math.round(v)).join(",")})`);
+
+          setColors(colors);
+        });
 
       navigator.mediaSession.metadata = new MediaMetadata({
         title: music.title,

@@ -34,9 +34,6 @@ export const MusicCard = ({
   musics,
   onClose,
 }: MusicCardProps): React.JSX.Element | null => {
-  //   const [lastWarningTime, setLastWarningTime] = useState(0);
-  //   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
   const { currentMusic } = usePlayerStore();
   const { toggleLikedMusic, likedMusics } = useLikedMusicStore();
   const [mounted, setMounted] = useState(false);

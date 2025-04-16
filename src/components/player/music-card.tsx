@@ -21,14 +21,15 @@ import { useEffect, useState } from "react";
 import { usePlayerStore } from "@/stores/player";
 import { useLikedMusicStore } from "@/stores/liked-music";
 import { toast } from "sonner";
+import type { Music } from "@/types/global";
 
 interface MusicCardProps {
-  //   music: Music;
+  musics: Music[];
   onClose: () => void;
 }
 
 export const MusicCard = ({
-  //   music,
+  musics,
   onClose,
 }: MusicCardProps): React.JSX.Element | null => {
   //   const [lastWarningTime, setLastWarningTime] = useState(0);
@@ -58,7 +59,7 @@ export const MusicCard = ({
     toggleMute,
     playNextTrack,
     playPreviousTrack,
-  } = usePlayer();
+  } = usePlayer(musics);
 
   // Prevent hydration mismatch
   useEffect(() => {

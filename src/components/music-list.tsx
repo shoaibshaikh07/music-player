@@ -5,12 +5,12 @@ import { cn } from "@/lib/utils";
 import { useBasicStore } from "@/stores/basic";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-// import { MusicCard } from "./player/music-card";
 import type { Music } from "@/types/global";
 import Image from "next/image";
 import { toast } from "sonner";
 import { usePlayer } from "@/hooks/player";
 import { MusicCard } from "./player/music-card";
+import { Play } from "lucide-react";
 
 const MusicList = ({
   musics,
@@ -21,7 +21,7 @@ const MusicList = ({
   // const [selectedMusic, setSelectedMusic] = useState<Music | null>(null);
 
   const { view } = useBasicStore();
-  const { playMusic } = usePlayer();
+  const { playMusic } = usePlayer(musics);
 
   return (
     <>
@@ -106,8 +106,12 @@ const MusicList = ({
                   view === "grid" ? "items-end" : "",
                 )}
               >
-                <Button className="text-xs" variant="secondary">
-                  Play
+                <Button
+                  className="text-xs"
+                  variant="secondary"
+                  size={view === "grid" ? "icon" : "sm"}
+                >
+                  {view === "grid" ? <Play className="size-5" /> : "Play"}
                 </Button>
               </div>
             </motion.li>
@@ -115,7 +119,7 @@ const MusicList = ({
         })}
       </ul>
       <AnimatePresence mode="wait">
-        <MusicCard onClose={(): void => playMusic(null)} />
+        <MusicCard musics={musics} onClose={(): void => playMusic(null)} />
       </AnimatePresence>
     </>
   );

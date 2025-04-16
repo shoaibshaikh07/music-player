@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePlayerStore } from "@/stores/player";
 import type { Music } from "@/types/global";
 import { getAudioUrl } from "@/lib/utils";
-import { musics } from "@/data/music";
 
 type ReturnType = {
   progress: number;
@@ -28,13 +27,13 @@ type ReturnType = {
   playPreviousTrack: () => void;
 };
 
-export function usePlayer(initialMusic?: Music): ReturnType {
+export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isBuffering, setIsBuffering] = useState(false);
-  const [colors] = useState<string[]>(["#3b82f6", "#8b5cf6", "#ec4899"]);
+  const [colors] = useState<string[]>(["#cf8268", "#f4dcd4", "#9b523a"]);
 
   const {
     currentMusic,
@@ -73,6 +72,38 @@ export function usePlayer(initialMusic?: Music): ReturnType {
   useEffect(() => {
     if (!audioRef.current || !music) return;
 
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+      navigator.mediaSession.setActionHandler("play", () => {
+        togglePlay();
+      });
+      navigator.mediaSession.setActionHandler("pause", () => {
+        togglePlay();
+      });
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: music.title,
+        artist: music.artist.join(", "),
+        artwork: [
+          {
+            src: music.cover,
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: music.cover,
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: music.cover,
+            sizes: "128x128",
+            type: "image/png",
+          },
+        ],
+      });
+    }
+
     if (isPlaying) {
       setIsLoading(false); // Set loading to false when playing
       setTimeout(async () => {
@@ -84,7 +115,7 @@ export function usePlayer(initialMusic?: Music): ReturnType {
     } else {
       audioRef.current.pause();
     }
-  }, [isPlaying, music]);
+  }, [isPlaying, music, togglePlay]);
 
   // Handle volume change
   useEffect(() => {

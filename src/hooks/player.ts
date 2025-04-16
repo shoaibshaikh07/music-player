@@ -14,6 +14,7 @@ type ReturnType = {
   isPlaying: boolean;
   volume: number;
   muted: boolean;
+  shuffle: boolean;
   colors: string[];
   isLiked: boolean;
 
@@ -22,6 +23,7 @@ type ReturnType = {
   handleProgressChange: (value: number[]) => void;
   handleVolumeChange: (value: number[]) => void;
   toggleMute: () => void;
+  toggleShuffle: () => void;
   playMusic: (music: Music | null) => void;
   toggleLikedMusic: (music: Music) => void;
   playNextTrack: () => void;
@@ -41,12 +43,14 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     isPlaying,
     volume,
     muted,
+    shuffle,
     likedMusic,
     setCurrentMusic,
     togglePlay,
     setIsPlaying,
     setVolume,
     setMuted,
+    setShuffle,
     playNext,
     toggleLiked,
     colors,
@@ -143,6 +147,11 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     audioRef.current.muted = muted; // Set muted per state
     setMuted(muted); // Update muted state
   }, [muted, setMuted]);
+
+  // Handle shuffle change
+  useEffect(() => {
+    if (!audioRef.current) return;
+  }, [shuffle, setShuffle]);
 
   // Set up audio event listeners
   useEffect(() => {
@@ -260,6 +269,11 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     setMuted(!prevMuted); // Toggle muted state
   };
 
+  const toggleShuffle = (): void => {
+    const prevShuffle = shuffle;
+    setShuffle(!prevShuffle); // Toggle muted state
+  };
+
   // Play next track
   const playNextTrack = (): void => {
     const currentMusicIndex = musics.findIndex(
@@ -293,6 +307,7 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     isPlaying,
     volume,
     muted,
+    shuffle,
     colors,
     isLiked: music ? likedMusic.includes(music.id) : false,
 
@@ -302,6 +317,7 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     handleProgressChange,
     handleVolumeChange,
     toggleMute,
+    toggleShuffle,
     playMusic,
     toggleLikedMusic,
     playNextTrack,

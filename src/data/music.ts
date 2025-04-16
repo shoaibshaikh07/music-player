@@ -23,13 +23,6 @@ export const musics: Music[] = [
     artist: ["NAYM"],
   },
   {
-    id: "286c1952-9c17-431c-8ef1-df324430b36a",
-    title: "Real Good Liar",
-    cover:
-      "https://linkstorage.linkfire.com/medialinks/images/a9a54b06-29a3-4da2-b22f-da4a6bfa3a68/artwork-440x440.jpg",
-    artist: ["Nokae"],
-  },
-  {
     id: "f6165e09-9b80-4d01-a87d-23df6ff96d09",
     title: "Another Way",
     cover:
@@ -112,6 +105,13 @@ export const musics: Music[] = [
     cover:
       "https://linkstorage.linkfire.com/medialinks/images/9b6bc799-86a0-4ec7-b410-e0e642d0a572/artwork-440x440.jpg",
     artist: ["Bad Computer"],
+  },
+  {
+    id: "286c1952-9c17-431c-8ef1-df324430b36a",
+    title: "Real Good Liar",
+    cover:
+      "https://linkstorage.linkfire.com/medialinks/images/a9a54b06-29a3-4da2-b22f-da4a6bfa3a68/artwork-440x440.jpg",
+    artist: ["Nokae"],
   },
   {
     id: "ba4c2431-83c8-4dbc-96d7-574e20ca245a",

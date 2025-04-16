@@ -7,6 +7,7 @@ interface PlayerState {
   isPlaying: boolean;
   volume: number;
   muted: boolean;
+  shuffle: boolean;
   queue: Music[];
   colors: string[];
   history: Music[];
@@ -19,6 +20,7 @@ interface PlayerState {
   setVolume: (volume: number) => void;
   toggleMute: () => void;
   setMuted: (muted: boolean) => void;
+  setShuffle: (shuffle: boolean) => void;
   setColors: (colors: string[]) => void;
   addToQueue: (music: Music) => void;
   removeFromQueue: (musicId: string) => void;
@@ -35,6 +37,7 @@ export const usePlayerStore = create<PlayerState>()(
       isPlaying: false,
       volume: 50,
       muted: false,
+      shuffle: true,
       queue: [],
       colors: [],
       history: [],
@@ -64,6 +67,8 @@ export const usePlayerStore = create<PlayerState>()(
       toggleMute: (): void => set((state) => ({ muted: !state.muted })),
 
       setMuted: (muted: boolean): void => set({ muted }),
+
+      setShuffle: (shuffle: boolean): void => set({ shuffle }),
 
       addToQueue: (music: Music): void =>
         set((state) => ({

@@ -35,7 +35,7 @@ const CardAurora = ({
   return (
     <motion.section
       className={cn(
-        "relative mx-4 w-full max-w-lg overflow-hidden rounded-sm border border-border/60 bg-card p-6 shadow",
+        "relative mx-4 mb-8 w-full max-w-lg rounded-sm border border-border/60 bg-card p-6 shadow",
         className,
       )}
       style={{

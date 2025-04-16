@@ -13,6 +13,7 @@ import {
   Heart,
   VolumeOff,
   X,
+  Shuffle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlayer } from "@/hooks/player";
@@ -56,15 +57,17 @@ export const MusicCard = ({
     handleVolumeChange,
     volume,
     muted,
+    shuffle,
     toggleMute,
+    toggleShuffle,
     playNextTrack,
     playPreviousTrack,
     colors,
   } = usePlayer(musics);
 
   useEffect(() => {
-    console.log("colorssss", colors);
-  }, [colors]);
+    console.log("Shuffle", shuffle);
+  }, [shuffle]);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -85,10 +88,10 @@ export const MusicCard = ({
       className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm backdrop-brightness-75 will-change-transform"
     >
       <CardAurora colors={colors} className="pointer-events-auto">
+        <motion.div onTap={onClose} className="-top-8 absolute right-4 z-50">
+          <X className="size-6 cursor-pointer" />
+        </motion.div>
         <div className="flex flex-col gap-4">
-          <motion.div onTap={onClose} className="-top-9 absolute right-4">
-            <X className="size-6" />
-          </motion.div>
           <motion.div
             layoutId={`image-${currentMusic.id}`}
             className="relative aspect-square w-full"
@@ -114,7 +117,10 @@ export const MusicCard = ({
               {currentMusic.artist.join(", ")}
             </motion.p>
           </div>
-          <motion.div layoutId={`playing-${currentMusic.id}`}>
+          <motion.div
+            layoutId={`playing-${currentMusic.id}`}
+            className="space-y-3"
+          >
             <div className="space-y-2">
               <Slider
                 value={[progress]}
@@ -149,57 +155,64 @@ export const MusicCard = ({
                 </span>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(): void => toggleLikedMusic(currentMusic)}
+              >
+                <Heart
+                  className={`h-6 w-6 ${isLiked ? "fill-current text-red-500" : ""}`}
+                />
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={playPreviousTrack}>
+                  <SkipBack className="h-6 w-6" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={(): void => toggleLikedMusic(currentMusic)}
+                  onClick={togglePlay}
+                  disabled={isBuffering || isLoading}
+                  onKeyDownCapture={(e): void => {
+                    if (e.key === "Space") {
+                      togglePlay();
+                    }
+                  }}
+                  className={cn(
+                    (isLoading || isBuffering) && "animate-pulse bg-muted",
+                    "relative bg-foreground text-background",
+                  )}
                 >
-                  <Heart
-                    className={`h-6 w-6 ${isLiked ? "fill-current text-red-500" : ""}`}
-                  />
+                  {isBuffering || isLoading ? (
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  ) : isPlaying ? (
+                    <Pause className="h-6 w-6" />
+                  ) : (
+                    <Play className="h-6 w-6" />
+                  )}
                 </Button>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={playPreviousTrack}
-                  >
-                    <SkipBack className="h-6 w-6" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={togglePlay}
-                    disabled={isBuffering || isLoading}
-                    onKeyDownCapture={(e): void => {
-                      if (e.key === "Space") {
-                        togglePlay();
-                      }
-                    }}
-                    className={cn(
-                      (isLoading || isBuffering) && "animate-pulse bg-muted",
-                      "relative",
-                    )}
-                  >
-                    {isBuffering || isLoading ? (
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    ) : isPlaying ? (
-                      <Pause className="h-6 w-6" />
-                    ) : (
-                      <Play className="h-6 w-6" />
-                    )}
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={playNextTrack}>
-                    <SkipForward className="h-6 w-6" />
-                  </Button>
-                </div>
+                <Button variant="ghost" size="icon" onClick={playNextTrack}>
+                  <SkipForward className="h-6 w-6" />
+                </Button>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(): void => toggleShuffle()}
+                className={cn("", shuffle && "bg-foreground text-background")}
+              >
+                <Shuffle className={"h-6 w-6"} />
+              </Button>
+            </div>
+            <div className="flex items-center justify-end">
               <div className="flex w-32 items-center gap-2">
                 <Button
                   variant="ghost"
-                  className={cn("px-4", muted && "bg-muted")}
+                  className={cn(
+                    "px-4",
+                    muted && "bg-foreground text-background",
+                  )}
                   size="icon"
                   onClick={toggleMute}
                 >
@@ -238,6 +251,8 @@ export const MusicCard = ({
                 />
               </div>
             </div>
+            {/* <div className="mt-4 flex items-center justify-between">
+            </div> */}
           </motion.div>
         </div>
       </CardAurora>

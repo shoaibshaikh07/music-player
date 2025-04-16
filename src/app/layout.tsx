@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 import { ViewTransitions } from "next-view-transitions";
 import BottomNavigation from "@/components/bottom-navigation";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: {
@@ -44,6 +45,7 @@ export default function RootLayout({
               <Navbar />
             </header>
             {children}
+            <Analytics />
             <Toaster />
             <BottomNavigation />
           </ThemeProvider>

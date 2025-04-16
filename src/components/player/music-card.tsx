@@ -23,6 +23,7 @@ import { usePlayerStore } from "@/stores/player";
 import { useLikedMusicStore } from "@/stores/liked-music";
 import { toast } from "sonner";
 import type { Music } from "@/types/global";
+import { useKeyPress } from "@/hooks/use-key-press";
 
 interface MusicCardProps {
   musics: Music[];
@@ -65,9 +66,9 @@ export const MusicCard = ({
     colors,
   } = usePlayer(musics);
 
-  useEffect(() => {
-    console.log("Shuffle", shuffle);
-  }, [shuffle]);
+  useKeyPress(["Enter", " "], () => {
+    togglePlay();
+  });
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -100,7 +101,7 @@ export const MusicCard = ({
               src={currentMusic.cover}
               alt={currentMusic.title}
               fill
-              className="rounded-[20px] object-cover"
+              className="rounded-[20px] object-cover shadow"
             />
           </motion.div>
           <div className="flex flex-col gap-1">
@@ -175,11 +176,6 @@ export const MusicCard = ({
                   size="icon"
                   onClick={togglePlay}
                   disabled={isBuffering || isLoading}
-                  onKeyDownCapture={(e): void => {
-                    if (e.key === "Space") {
-                      togglePlay();
-                    }
-                  }}
                   className={cn(
                     (isLoading || isBuffering) && "animate-pulse bg-muted",
                     "relative border bg-foreground text-background",

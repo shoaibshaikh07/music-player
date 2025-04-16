@@ -16,10 +16,10 @@ export const metadata: Metadata = {
     template: "%s - Soulplay",
   },
   description:
-    "Soulplay is a music player that allows you to listen to your favorite songs. Built with Next.js, Tailwind, Shadcn/ui for the Frontend UI Hackathon 2025 #2 by outlier.ai",
+    "Soulplay is a beautifully crafted music player featuring a sleek interface, smooth animations, and soothing color palette. Immerse yourself in your favorite tunes with this modern and intuitive music experience.",
   applicationName: "Soulplay",
   abstract:
-    "Soulplay is a music player that allows you to listen to your favorite songs. Built with Next.js, Tailwind, Shadcn/ui for the Frontend UI Hackathon 2025 #2 by outlier.ai",
+    "Soulplay is a beautifully crafted music player featuring a sleek interface, smooth animations, and soothing color palette. Immerse yourself in your favorite tunes with this modern and intuitive music experience",
   creator: "Shoaib Shaikh",
   metadataBase: new URL(Constant.PRODUCTION_URL),
   openGraph: {
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     url: Constant.PRODUCTION_URL,
     title: "Soulplay - Music Player",
     description:
-      "Soulplay is a music player that allows you to listen to your favorite songs. Built with Next.js, Tailwind, Shadcn/ui for the Frontend UI Hackathon 2025 #2 by outlier.ai",
+      "Soulplay is a beautifully crafted music player featuring a sleek interface, smooth animations, and soothing color palette. Immerse yourself in your favorite tunes with this modern and intuitive music experience",
     images: [
       {
         url: `${Constant.PRODUCTION_URL}/og.png`,

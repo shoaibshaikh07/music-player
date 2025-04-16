@@ -18,7 +18,7 @@ const CardAurora = ({
   className?: string;
   colors: string[];
 }): React.JSX.Element => {
-  const COLORS = useMemo(() => colors.slice(0, 4), [colors]);
+  const COLORS = useMemo(() => colors.slice(0, 5), [colors]);
   const color = useMotionValue(COLORS[0]);
 
   // const backgroundImage = useMotionTemplate`radial-gradient(78.44% 10.98% at 35.59% 4.81%, ${color} 0%, hsl(var(--background)) 100%)`;

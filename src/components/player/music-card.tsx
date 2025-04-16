@@ -174,8 +174,10 @@ export const MusicCard = ({
                   onClick={togglePlay}
                   disabled={isBuffering || isLoading}
                   className={cn(
-                    (isLoading || isBuffering) && "animate-pulse bg-muted",
-                    "relative border bg-foreground text-background",
+                    isLoading || isBuffering
+                      ? "animate-pulse bg-muted dark:bg-muted/10"
+                      : " border bg-foreground text-background",
+                    "relative",
                   )}
                 >
                   {isBuffering || isLoading ? (

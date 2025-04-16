@@ -159,11 +159,6 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     setMuted(muted); // Update muted state
   }, [muted, setMuted]);
 
-  // Handle shuffle change
-  useEffect(() => {
-    if (!audioRef.current) return;
-  }, [shuffle, setShuffle]);
-
   // Set up audio event listeners
   useEffect(() => {
     if (!audioRef.current) return;
@@ -290,8 +285,11 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     const currentMusicIndex = musics.findIndex(
       (track) => track.id === currentMusic?.id,
     );
-    const nextMusicIndex =
-      currentMusicIndex + 1 === musics.length ? 0 : currentMusicIndex + 1;
+    const nextMusicIndex = shuffle
+      ? Math.floor(Math.random() * musics.length)
+      : currentMusicIndex + 1 === musics.length
+        ? 0
+        : currentMusicIndex + 1;
 
     const nextMusic = musics[nextMusicIndex];
     playMusic(nextMusic);

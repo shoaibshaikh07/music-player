@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePlayerStore } from "@/stores/player";
 import type { Music } from "@/types/global";
 import { getAudioUrl } from "@/lib/utils";
+import { extractColors } from "extract-colors";
 
 type ReturnType = {
   progress: number;
@@ -24,6 +25,7 @@ type ReturnType = {
   playMusic: (music: Music | null) => void;
   toggleLikedMusic: (music: Music) => void;
   playNextTrack: () => void;
+  setColors: (colors: string[]) => void;
   playPreviousTrack: () => void;
 };
 
@@ -33,7 +35,6 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isBuffering, setIsBuffering] = useState(false);
-  const [colors] = useState<string[]>(["#cf8268", "#f4dcd4", "#9b523a"]);
 
   const {
     currentMusic,
@@ -48,6 +49,8 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     setMuted,
     playNext,
     toggleLiked,
+    colors,
+    setColors,
   } = usePlayerStore();
 
   const music = currentMusic || initialMusic;
@@ -79,6 +82,17 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
       });
       navigator.mediaSession.setActionHandler("pause", () => {
         togglePlay();
+      });
+
+      const image = new Image();
+
+      image.src = `http://localhost:3000/_next/image?url=${encodeURIComponent(
+        music.cover,
+      )}&w=1200&q=75`;
+
+      extractColors(image).then((colorData) => {
+        const hexcolors = colorData.map((color) => color.hex);
+        setColors(hexcolors);
       });
 
       navigator.mediaSession.metadata = new MediaMetadata({
@@ -115,7 +129,7 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     } else {
       audioRef.current.pause();
     }
-  }, [isPlaying, music, togglePlay]);
+  }, [isPlaying, music, setColors, togglePlay]);
 
   // Handle volume change
   useEffect(() => {
@@ -291,6 +305,7 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     playMusic,
     toggleLikedMusic,
     playNextTrack,
+    setColors,
     playPreviousTrack,
   };
 }

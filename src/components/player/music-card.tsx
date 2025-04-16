@@ -59,7 +59,12 @@ export const MusicCard = ({
     toggleMute,
     playNextTrack,
     playPreviousTrack,
+    colors,
   } = usePlayer(musics);
+
+  useEffect(() => {
+    console.log("colorssss", colors);
+  }, [colors]);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -70,8 +75,6 @@ export const MusicCard = ({
 
   // Don't render player if no music is selected
   if (!currentMusic) return null;
-
-  const colors = ["#3b82f6", "#8b5cf6", "#ec4899"];
 
   return (
     <motion.div

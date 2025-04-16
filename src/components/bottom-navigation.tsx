@@ -43,7 +43,7 @@ const BottomNavigation = (): React.JSX.Element | null => {
               router.push(link.href, {
                 scroll: true,
                 onTransitionReady:
-                  link.href === "/liked"
+                  link.href === "/library"
                     ? slideInOutRight
                     : link.href === "/explore"
                       ? slideInOutLeft

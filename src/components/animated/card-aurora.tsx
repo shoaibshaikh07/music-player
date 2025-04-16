@@ -9,18 +9,16 @@ import {
 } from "motion/react";
 import { useEffect } from "react";
 
-const COLORS = ["#d89883", "#98533d", "#f8ece8"];
-
 const CardAurora = ({
   children,
   className,
-  // colors,
+  colors,
 }: {
   children: React.ReactNode;
   className?: string;
   colors: string[];
 }): React.JSX.Element => {
-  // const COLORS = colors.slice(0, 3);
+  const COLORS = colors.slice(0, 3);
   const color = useMotionValue(COLORS[0]);
 
   const backgroundImage = useMotionTemplate`radial-gradient(78.44% 10.98% at 35.59% 4.81%, ${color} 0%, hsl(var(--background)) 100%)`;
@@ -32,7 +30,7 @@ const CardAurora = ({
       repeat: Number.POSITIVE_INFINITY,
       repeatType: "mirror",
     });
-  }, [color]);
+  }, [color, COLORS]);
 
   return (
     <motion.section

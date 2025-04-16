@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { usePlayer } from "@/hooks/player";
 import { usePlayerStore } from "@/stores/player";
 import Image from "next/image";
+import { musics } from "@/data/music";
 
 export function MusicPlayer(): React.JSX.Element | null {
   const { currentMusic } = usePlayerStore();
@@ -35,7 +36,7 @@ export function MusicPlayer(): React.JSX.Element | null {
     toggleMute,
     playNextTrack,
     playPreviousTrack,
-  } = usePlayer();
+  } = usePlayer(musics);
 
   // Prevent hydration mismatch
   useEffect(() => {

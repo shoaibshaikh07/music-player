@@ -160,9 +160,10 @@ export const MusicCard = ({
                 variant="ghost"
                 size="icon"
                 onClick={(): void => toggleLikedMusic(currentMusic)}
+                className={cn("", isLiked && "bg-red-400 text-white")}
               >
                 <Heart
-                  className={`h-6 w-6 ${isLiked ? "fill-current text-red-500" : ""}`}
+                  className={`h-6 w-6 ${isLiked ? "fill-current text-white" : ""}`}
                 />
               </Button>
               <div className="flex items-center gap-2">
@@ -181,7 +182,7 @@ export const MusicCard = ({
                   }}
                   className={cn(
                     (isLoading || isBuffering) && "animate-pulse bg-muted",
-                    "relative bg-foreground text-background",
+                    "relative border bg-foreground text-background",
                   )}
                 >
                   {isBuffering || isLoading ? (

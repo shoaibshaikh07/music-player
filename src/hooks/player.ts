@@ -308,7 +308,7 @@ export function usePlayer(musics: Music[], initialMusic?: Music): ReturnType {
     volume,
     muted,
     shuffle,
-    colors,
+    colors: colors.reverse(),
     isLiked: music ? likedMusic.includes(music.id) : false,
 
     // Methods

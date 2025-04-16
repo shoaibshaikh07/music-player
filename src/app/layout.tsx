@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { ViewTransitions } from "next-view-transitions";
 import BottomNavigation from "@/components/bottom-navigation";
 import { Analytics } from "@vercel/analytics/react";
+import { Constant } from "@/lib/constant";
 
 export const metadata: Metadata = {
   title: {
@@ -16,6 +17,40 @@ export const metadata: Metadata = {
   },
   description:
     "Soulplay is a music player that allows you to listen to your favorite songs. Built with Next.js, Tailwind, Shadcn/ui for the Frontend UI Hackathon 2025 #2 by outlier.ai",
+  applicationName: "Soulplay",
+  abstract:
+    "Soulplay is a music player that allows you to listen to your favorite songs. Built with Next.js, Tailwind, Shadcn/ui for the Frontend UI Hackathon 2025 #2 by outlier.ai",
+  creator: "Shoaib Shaikh",
+  metadataBase: new URL(Constant.PRODUCTION_URL),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: Constant.PRODUCTION_URL,
+    title: "Soulplay - Music Player",
+    description:
+      "Soulplay is a music player that allows you to listen to your favorite songs. Built with Next.js, Tailwind, Shadcn/ui for the Frontend UI Hackathon 2025 #2 by outlier.ai",
+    images: [
+      {
+        url: `${Constant.PRODUCTION_URL}/og.png`,
+        width: 1200,
+        height: 630,
+        alt: "Soulplay - Music Player",
+      },
+    ],
+  },
+  alternates: {
+    canonical: `${Constant.PRODUCTION_URL}`,
+  },
+  authors: [
+    {
+      name: "Shoaib Shaikh",
+      url: "https://shoaibshaikh.in",
+    },
+  ],
+  icons: {
+    icon: `${Constant.PRODUCTION_URL}/logo.png`,
+    shortcut: `${Constant.PRODUCTION_URL}/logo.png`,
+  },
 };
 
 export default function RootLayout({

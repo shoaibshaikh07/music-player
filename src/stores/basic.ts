@@ -9,7 +9,7 @@ interface BasicState {
 export const useBasicStore = create<BasicState>()(
   persist(
     (set) => ({
-      view: "list",
+      view: "grid",
       setView: (view: "grid" | "list"): void => set({ view }),
     }),
     {
